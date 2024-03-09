@@ -1,0 +1,24 @@
+FROM debian:12-slim
+
+ARG AWSCLI_GPG_PUBLIC_KEY_FILE="aws_cli_pgp_public_key.txt"
+ARG AWS_CLI_VERSION="2.13.7"
+ARG TERRAFORM_GPG_FINGERPRINT="798A EC65 4E5C 1542 8C8E  42EE AA16 FCBC A621 E701"
+
+COPY $AWSCLI_GPG_PUBLIC_KEY_FILE /tmp/$AWSCLI_GPG_PUBLIC_KEY_FILE
+
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y \
+    curl \
+    git \
+    unzip \ 
+    gpg \
+    lsb-release && \
+    #
+    # Install aws cli
+    curl -o "awscliv2.zip" "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWS_CLI_VERSION}.zip" && \
+    curl -o awscliv2.sig https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWS_CLI_VERSION}.zip.sig && \
+    gpg --import /tmp/$AWSCLI_GPG_PUBLIC_KEY_FILE && \
+    gpg --verify awscliv2.sig awscliv2.zip && \
+    unzip awscliv2.zip && \
+    ./aws/install && \
+    rm -f awscliv2.zip /tmp/$AWSCLI_GPG_PUBLIC_KEY_FILE

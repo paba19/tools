@@ -1,0 +1,31 @@
+FROM pabar19/platform-pulumi:1.0.0
+ARG NODE_VERSION="20.11"
+
+RUN apt-get update && apt-get install -y \
+    zsh \
+    vim && \
+    rm -rf /var/lib/apt/lists/* && \
+    groupadd -r dev -g 1001 && useradd --no-log-init -m -r -g dev -s /bin/zsh -u 1001 dev && \
+    /bin/su -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh) --unattended" - dev && \
+    /bin/su -c "git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /home/dev/.oh-my-zsh/custom/themes/powerlevel10k" - dev
+
+
+
+COPY --chown=dev:dev p10k.zsh /home/dev/.p10k.zsh
+COPY --chown=dev:dev zshrc /home/dev/.zshrc
+
+WORKDIR /home/dev
+
+USER dev
+
+ENV NVM_DIR /home/dev/.nvm
+
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash && \
+    . ${NVM_DIR}/nvm.sh  && \
+    nvm install ${NODE_VERSION} && \
+    nvm use ${NODE_VERSION} && \
+    nvm alias default ${NODE_VERSION} && \
+    nvm use default
+
+
+VOLUME [ "/home/dev/.aws", "/home/dev/.ssh", "/home/dev/pulumi" ]

@@ -1,0 +1,6 @@
+FROM pabar19/platform-base:1.1.0
+ARG PULUMI_VERSION="3.109.0"
+
+RUN curl https://get.pulumi.com/releases/sdk/pulumi-v${PULUMI_VERSION}-linux-x64.tar.gz | tar -xvz && \
+    mv pulumi/* /usr/local/bin/ && \
+    chmod +x /usr/local/bin/pulumi
