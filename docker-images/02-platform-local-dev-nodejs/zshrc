@@ -79,7 +79,7 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(aws git kubectl nvm ssh-agent taskwarrior)
+plugins=(aws azure git kubectl nvm ssh-agent taskwarrior)
 
 zstyle :omz:plugins:ssh-agent identities github_gentoo_pbws
 

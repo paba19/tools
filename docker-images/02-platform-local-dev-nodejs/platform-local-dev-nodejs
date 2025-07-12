@@ -1,6 +1,10 @@
-FROM pabar19/platform-pulumi:1.0.0
-ARG NODE_VERSION="20.11"
+FROM pabar19/platform-base:1.6.0
+# Check Node.js version at https://nodejs.org/en/download/releases/
+ARG NODE_VERSION="22.17"
 
+
+# Install NVM and Node.js
+# Installing as user 'dev' to avoid permission issues, so we need to create the user first
 RUN apt-get update && apt-get install -y \
     zsh \
     vim && \
@@ -28,4 +32,4 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | ba
     nvm use default
 
 
-VOLUME [ "/home/dev/.aws", "/home/dev/.ssh", "/home/dev/pulumi" ]
+VOLUME [ "/home/dev/.aws", "/home/dev/.azure", "/home/dev/.ssh", "/home/dev/pulumi" ]

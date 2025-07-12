@@ -27,3 +27,11 @@ Because a non root user is used in the docker container, you need to give access
 ### Run the container
 
 `sudo docker run -ti --rm --name local-dev -v /home/$(id -u)/.aws:/home/dev/.aws -v /home/$(id -u)/.ssh:/home/dev/.ssh -v /home/$(id -u)/.kube:/home/dev/.kube platform-local-dev zsh`
+
+
+# Use the script
+You can also use the script build.sh
+
+It will go through all the directories.
+
+The idea is to build a common base, and then a terraform and a pulumi local dev, so you can use one or the other

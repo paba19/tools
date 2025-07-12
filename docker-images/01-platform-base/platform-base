@@ -1,13 +1,21 @@
 FROM debian:12-slim
 
 ARG AWSCLI_GPG_PUBLIC_KEY_FILE="aws_cli_pgp_public_key.txt"
-ARG AWS_CLI_VERSION="2.13.7"
-ARG TERRAFORM_GPG_FINGERPRINT="798A EC65 4E5C 1542 8C8E  42EE AA16 FCBC A621 E701"
+# Check AWS CLI version at https://raw.githubusercontent.com/aws/aws-cli/v2/CHANGELOG.rst
+ARG AWS_CLI_VERSION="2.27.5"
+# Check Azure CLI version at https://packages.microsoft.com/repos/azure-cli/pool/main/a/azure-cli/
+ARG AZURE_CLI_VERSION="2.75.0"
+# Check Terraform version at https://releases.hashicorp.com/terraform/
+ARG TERRAFORM_VERSION="1.12.2"
+# Check Pulumi version at https://www.pulumi.com/docs/iac/download-install/versions/
+ARG PULUMI_VERSION="3.181.0"
 
 COPY $AWSCLI_GPG_PUBLIC_KEY_FILE /tmp/$AWSCLI_GPG_PUBLIC_KEY_FILE
 
 RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y \
+    apt-transport-https \
+    ca-certificates \
     curl \
     git \
     unzip \ 
@@ -21,4 +29,28 @@ RUN apt-get update && apt-get upgrade -y && \
     gpg --verify awscliv2.sig awscliv2.zip && \
     unzip awscliv2.zip && \
     ./aws/install && \
-    rm -f awscliv2.zip /tmp/$AWSCLI_GPG_PUBLIC_KEY_FILE
+    rm -f awscliv2.zip /tmp/$AWSCLI_GPG_PUBLIC_KEY_FILE && \
+    #
+    # Install a specific version of Azure CLI
+    mkdir -p /etc/apt/keyrings && \
+    curl -sLS https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee /etc/apt/keyrings/microsoft.gpg > /dev/null && \
+    chmod go+r /etc/apt/keyrings/microsoft.gpg && \
+    AZ_DIST=$(lsb_release -cs) && \
+    echo "Types: deb" > /etc/apt/sources.list.d/azure-cli.sources && \
+    echo "URIs: https://packages.microsoft.com/repos/azure-cli/" >> /etc/apt/sources.list.d/azure-cli.sources && \
+    echo "Suites: ${AZ_DIST}" >> /etc/apt/sources.list.d/azure-cli.sources && \
+    echo 'Components: main' >> /etc/apt/sources.list.d/azure-cli.sources && \
+    echo "Architectures: $(dpkg --print-architecture)" >> /etc/apt/sources.list.d/azure-cli.sources && \
+    echo 'Signed-by: /etc/apt/keyrings/microsoft.gpg' >> /etc/apt/sources.list.d/azure-cli.sources && \
+    apt-get update && \
+    apt-get install -y azure-cli=${AZURE_CLI_VERSION}-1~${AZ_DIST} && \
+    # Install terraform
+    curl -s https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg && \
+    gpg --no-default-keyring --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg --fingerprint | grep "$TERRAFORM_GPG_FINGERPRINT" > /dev/null && \
+    echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" > /etc/apt/sources.list.d/hashicorp.list && \
+    apt update && \
+    apt-get install -y terraform=${TERRAFORM_VERSION}-1 && \
+    ## Install Pulumi
+    curl https://get.pulumi.com/releases/sdk/pulumi-v${PULUMI_VERSION}-linux-x64.tar.gz | tar -xvz && \
+    mv pulumi/* /usr/local/bin/ && \
+    chmod +x /usr/local/bin/pulumi

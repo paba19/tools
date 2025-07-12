@@ -72,11 +72,11 @@ else
 fi
 
 if [ -z "$ONLY" ]; then
-    DIRS="$(find . -mindepth 1 -maxdepth 1 -type d)"
+    DIRS="$(find . -mindepth 1 -maxdepth 1 -type d | sort)"
 else
-    DIRS="$(ls | grep $ONLY)"
+    DIRS="$(ls | grep $ONLY | sort)"
 fi
- for d in $(echo $DIRS | sort); do
+ for d in $(echo $DIRS); do
     cd $d
     IMAGENAME=$(echo $d | cut -d '-' -f 2-)
     MAJORSTART="$(awk -F '.' '{ print $1 }' lastbuilt)"
