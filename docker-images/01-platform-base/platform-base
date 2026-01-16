@@ -1,14 +1,14 @@
-FROM debian:12-slim
+FROM debian:13-slim
 
 ARG AWSCLI_GPG_PUBLIC_KEY_FILE="aws_cli_pgp_public_key.txt"
 # Check AWS CLI version at https://raw.githubusercontent.com/aws/aws-cli/v2/CHANGELOG.rst
-ARG AWS_CLI_VERSION="2.27.5"
+ARG AWS_CLI_VERSION="2.31.37"
 # Check Azure CLI version at https://packages.microsoft.com/repos/azure-cli/pool/main/a/azure-cli/
 ARG AZURE_CLI_VERSION="2.75.0"
 # Check Terraform version at https://releases.hashicorp.com/terraform/
-ARG TERRAFORM_VERSION="1.12.2"
+ARG TERRAFORM_VERSION="1.14.3"
 # Check Pulumi version at https://www.pulumi.com/docs/iac/download-install/versions/
-ARG PULUMI_VERSION="3.181.0"
+ARG PULUMI_VERSION="3.216.0"
 
 COPY $AWSCLI_GPG_PUBLIC_KEY_FILE /tmp/$AWSCLI_GPG_PUBLIC_KEY_FILE
 
@@ -31,19 +31,21 @@ RUN apt-get update && apt-get upgrade -y && \
     ./aws/install && \
     rm -f awscliv2.zip /tmp/$AWSCLI_GPG_PUBLIC_KEY_FILE && \
     #
+    # Trixie repo for Microsoft azure-cli package does not exist yet. So using stock azure-cli in trixie repos
     # Install a specific version of Azure CLI
-    mkdir -p /etc/apt/keyrings && \
-    curl -sLS https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee /etc/apt/keyrings/microsoft.gpg > /dev/null && \
-    chmod go+r /etc/apt/keyrings/microsoft.gpg && \
-    AZ_DIST=$(lsb_release -cs) && \
-    echo "Types: deb" > /etc/apt/sources.list.d/azure-cli.sources && \
-    echo "URIs: https://packages.microsoft.com/repos/azure-cli/" >> /etc/apt/sources.list.d/azure-cli.sources && \
-    echo "Suites: ${AZ_DIST}" >> /etc/apt/sources.list.d/azure-cli.sources && \
-    echo 'Components: main' >> /etc/apt/sources.list.d/azure-cli.sources && \
-    echo "Architectures: $(dpkg --print-architecture)" >> /etc/apt/sources.list.d/azure-cli.sources && \
-    echo 'Signed-by: /etc/apt/keyrings/microsoft.gpg' >> /etc/apt/sources.list.d/azure-cli.sources && \
-    apt-get update && \
-    apt-get install -y azure-cli=${AZURE_CLI_VERSION}-1~${AZ_DIST} && \
+    # mkdir -p /etc/apt/keyrings && \
+    # curl -sLS https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee /etc/apt/keyrings/microsoft.gpg > /dev/null && \
+    # chmod go+r /etc/apt/keyrings/microsoft.gpg && \
+    # AZ_DIST=$(lsb_release -cs) && \
+    # echo "Types: deb" > /etc/apt/sources.list.d/azure-cli.sources && \
+    # echo "URIs: https://packages.microsoft.com/repos/azure-cli/" >> /etc/apt/sources.list.d/azure-cli.sources && \
+    # echo "Suites: ${AZ_DIST}" >> /etc/apt/sources.list.d/azure-cli.sources && \
+    # echo 'Components: main' >> /etc/apt/sources.list.d/azure-cli.sources && \
+    # echo "Architectures: $(dpkg --print-architecture)" >> /etc/apt/sources.list.d/azure-cli.sources && \
+    # echo 'Signed-by: /etc/apt/keyrings/microsoft.gpg' >> /etc/apt/sources.list.d/azure-cli.sources && \
+    # apt-get update && \
+    # apt-get install -y azure-cli=${AZURE_CLI_VERSION}-1~${AZ_DIST} && \ 
+    apt-get install -y azure-cli && \
     # Install terraform
     curl -s https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg && \
     gpg --no-default-keyring --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg --fingerprint | grep "$TERRAFORM_GPG_FINGERPRINT" > /dev/null && \
