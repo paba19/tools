@@ -1,6 +1,6 @@
-FROM pabar19/platform-base:1.6.0
+FROM pabar19/platform-base:2.0.0
 # Check Node.js version at https://nodejs.org/en/download/releases/
-ARG NODE_VERSION="22.17"
+ARG NODE_VERSION="24.13"
 
 
 # Install NVM and Node.js
